@@ -22,6 +22,9 @@ export type RouteResponse = {
   disableTemplating: boolean;
   fallbackTo404: boolean;
   default: boolean;
+  // request payload file
+  requestFilePath: string;
+  requestFileLabel: string;
 };
 
 export enum ResponseMode {

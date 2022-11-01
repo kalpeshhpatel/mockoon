@@ -76,7 +76,10 @@ export const RouteResponseDefault: RouteResponse = {
   rulesOperator: 'OR',
   disableTemplating: false,
   fallbackTo404: false,
-  default: false
+  default: false,
+  // request payload file
+  requestFilePath: '',
+  requestFileLabel: ''
 };
 
 export const ResponseRuleDefault: ResponseRule = {
@@ -224,7 +227,15 @@ const RouteResponseSchema = Joi.object<RouteResponse, true>({
   fallbackTo404: Joi.boolean()
     .failover(RouteResponseDefault.fallbackTo404)
     .required(),
-  default: Joi.boolean().failover(RouteResponseDefault.default).required()
+  default: Joi.boolean().failover(RouteResponseDefault.default).required(),
+  requestFilePath: Joi.string()
+    .allow('')
+    .failover(RouteResponseDefault.requestFilePath)
+    .required(),
+  requestFileLabel: Joi.string()
+    .allow('')
+    .failover(RouteResponseDefault.requestFileLabel)
+    .required(),
 });
 
 export const RouteSchema = Joi.object<Route, true>({

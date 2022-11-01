@@ -117,6 +117,10 @@ export class ServerInstance {
       }
     });
 
+    server.on('custom-event', (payload) => {
+      console.log('custom-event', payload);
+    });
+
     server.start();
   }
 }

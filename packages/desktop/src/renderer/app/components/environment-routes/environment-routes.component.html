@@ -207,7 +207,15 @@
                   class="nav-link"
                   [ngClass]="{ active: activeTab === 'RESPONSE' }"
                   (click)="setActiveTab('RESPONSE')"
-                  >Status & Body</a
+                  >Response Status & Body</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [ngClass]="{ active: activeTab === 'REQUEST' }"
+                  (click)="setActiveTab('REQUEST')"
+                  >Request File</a
                 >
               </li>
               <li class="nav-item">
@@ -466,6 +474,67 @@
             ></app-custom-select>
           </div>
         </ng-container>
+      </ng-container>
+
+      <!-- REQUEST tab -->
+      <ng-container
+        *ngIf="(activeTab$ | async) === 'REQUEST'"
+        [formGroup]="activeRouteResponseForm"
+      >
+        <p class="pt-2 px-2 m-0">
+          Specify the file that should be updated with request payload using the
+          <a href="javascript:void(0)" (click)="openTemplatingOverviewLink()"
+            >templating engine.</a
+          >
+        </p>
+        <div class="input-group pt-2 px-2">
+          <input
+            type="text"
+            class="form-control mt-1"
+            formControlName="requestFileLabel"
+            placeholder="Add documentation for this file"
+          />
+        </div>
+
+        <!-- body: file -->
+        <div class="input-group px-2 mt-4">
+          <input
+            type="text"
+            class="form-control col-8"
+            formControlName="requestFilePath"
+            placeholder="Relative or absolute path"
+          />
+          <button
+            *ngIf="activeRouteResponse.requestFilePath"
+            type="button"
+            (click)="activeRouteResponseForm.get('requestFilePath').setValue('')"
+            class="btn btn-custom"
+            ngbTooltip="Clear"
+          >
+            <app-svg icon="clear"></app-svg>
+          </button>
+          <div class="input-group-append">
+            <button
+              class="btn btn-link"
+              (click)="browseFiles(true)"
+              ngbTooltip="Browse"
+            >
+              <app-svg icon="find_in_page"></app-svg>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="activeRouteResponse.requestFilePath" class="px-2">
+          <small>
+            Detected MIME type:
+            {{ (activeResponseRequestFileMimeType$ | async)?.mimeType || 'unknown' }}
+            {{
+              (activeResponseRequestFileMimeType$ | async)?.supportsTemplating
+                ? ' - Supports templating'
+                : ''
+            }}
+          </small>
+        </div>
       </ng-container>
 
       <!-- HEADERS tab -->

@@ -73,6 +73,10 @@ export class EnvironmentRoutesComponent implements OnInit, OnDestroy {
     mimeType: string;
     supportsTemplating: boolean;
   }>;
+  public activeResponseRequestFileMimeType$: Observable<{
+    mimeType: string;
+    supportsTemplating: boolean;
+  }>;
   public effectiveContentType$: Observable<string>;
   public defaultResponseTooltip$: Observable<string>;
   public environmentsStatus$: Observable<EnvironmentsStatuses>;
@@ -178,6 +182,18 @@ export class EnvironmentRoutesComponent implements OnInit, OnDestroy {
       this.store.selectActiveRouteResponseLastLog();
     this.activeResponseFileMimeType$ = this.activeRouteResponse$.pipe(
       map((activeRouteResponse) => activeRouteResponse?.filePath),
+      filter((filePath) => !!filePath),
+      distinctUntilChanged(),
+      mergeMap((filePath) =>
+        from(MainAPI.invoke('APP_GET_MIME_TYPE', filePath))
+      ),
+      map((mimeType) => ({
+        mimeType,
+        supportsTemplating: MimeTypesWithTemplating.indexOf(mimeType) > -1
+      }))
+    );
+    this.activeResponseRequestFileMimeType$ = this.activeRouteResponse$.pipe(
+      map((activeRouteResponse) => activeRouteResponse?.requestFilePath),
       filter((filePath) => !!filePath),
       distinctUntilChanged(),
       mergeMap((filePath) =>
@@ -360,13 +376,17 @@ export class EnvironmentRoutesComponent implements OnInit, OnDestroy {
   /**
    * Open file browsing dialog
    */
-  public browseFiles() {
+  public browseFiles(isRequestFile = false) {
     this.dialogsService
       .showOpenDialog('Choose a file', null, false)
       .pipe(
         tap((filePath) => {
           if (filePath) {
-            this.activeRouteResponseForm.get('filePath').setValue(filePath);
+            if (isRequestFile) {
+              this.activeRouteResponseForm.get('requestFilePath').setValue(filePath);
+            } else {
+              this.activeRouteResponseForm.get('filePath').setValue(filePath);
+            }
           }
         })
       )
@@ -421,6 +441,13 @@ export class EnvironmentRoutesComponent implements OnInit, OnDestroy {
     if (routeResponseIndex != null) {
       this.store.update(setDefaultRouteResponseAction(routeResponseIndex));
     }
+  }
+
+  public openTemplatingOverviewLink(): void {
+    MainAPI.send(
+      'APP_OPEN_EXTERNAL_LINK',
+      'https://mockoon.com/docs/latest/templating/overview/'
+    );
   }
 
   /**
@@ -479,7 +506,9 @@ export class EnvironmentRoutesComponent implements OnInit, OnDestroy {
       body: [RouteResponseDefault.body],
       rules: this.formBuilder.array([]),
       disableTemplating: [RouteResponseDefault.disableTemplating],
-      fallbackTo404: [RouteResponseDefault.fallbackTo404]
+      fallbackTo404: [RouteResponseDefault.fallbackTo404],
+      requestFilePath: [RouteResponseDefault.requestFilePath],
+      requestFileLabel: [RouteResponseDefault.requestFileLabel],
     });
 
     // send new activeRouteResponseForm values to the store, one by one
@@ -546,7 +575,9 @@ export class EnvironmentRoutesComponent implements OnInit, OnDestroy {
             body: activeRouteResponse.body,
             rules: activeRouteResponse.rules,
             disableTemplating: activeRouteResponse.disableTemplating,
-            fallbackTo404: activeRouteResponse.fallbackTo404
+            fallbackTo404: activeRouteResponse.fallbackTo404,
+            requestFilePath: activeRouteResponse.requestFilePath,
+            requestFileLabel: activeRouteResponse.requestFileLabel,
           },
           { emitEvent: false }
         );

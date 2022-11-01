@@ -8,4 +8,5 @@ export type ServerEvents = {
   started: () => void;
   'entering-request': () => void;
   'transaction-complete': (transaction: Transaction) => void;
+  'custom-event': (payload: any) => void;
 };
