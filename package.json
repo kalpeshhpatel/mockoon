@@ -32,6 +32,10 @@
     "build:commons-server": "lerna run --scope @mockoon/commons-server build",
     "build:libs": "lerna run --scope @mockoon/commons build && lerna run --scope @mockoon/commons-server build",
     "build:cli": "lerna run --scope @mockoon/cli build",
+    "build:pack:commons": "npm run build:commons && lerna run --scope @mockoon/commons pack",
+    "build:pack:commons-server": "npm run build:commons-server && lerna run --scope @mockoon/commons-server pack",
+    "build:pack:libs": "npm run build:pack:commons && npm run build:pack:commons-server",
+    "build:pack:cli": "npm run build:cli && lerna run --scope @mockoon/cli pack",
     "start:desktop:dev": "lerna run --stream --scope @mockoon/desktop start",
     "build:desktop:dev:watch": "lerna run --stream --scope @mockoon/desktop build:watch:all",
     "build:desktop:dev": "lerna run --stream --scope @mockoon/desktop build:dev:all",
@@ -61,5 +65,9 @@
     "lerna": "6.0.1",
     "prettier": "2.7.1",
     "prettier-plugin-organize-imports": "3.1.1"
+  },
+  "engines": {
+    "node": ">=16.0.0 < 17.0.0",
+    "npm": ">=8.0.0 < 9.0.0"
   }
 }

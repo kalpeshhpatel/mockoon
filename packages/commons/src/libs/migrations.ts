@@ -495,6 +495,22 @@ export const Migrations: {
         });
       });
     }
+  },
+  // Add requestFilePath and requestFileLabel
+  {
+    id: 25,
+    migrationFunction: (environment: Environment) => {
+      environment.routes.forEach((route: Route) => {
+        route.responses.forEach((routeResponse) => {
+          if (routeResponse.requestFilePath === undefined) {
+            routeResponse.requestFilePath = RouteResponseDefault.requestFilePath;
+          }
+          if (routeResponse.requestFileLabel === undefined) {
+            routeResponse.requestFileLabel = RouteResponseDefault.requestFileLabel;
+          }
+        });
+      });
+    }
   }
 ];
 

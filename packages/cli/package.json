@@ -1,7 +1,7 @@
 {
   "name": "@mockoon/cli",
   "description": "Mockoon's CLI. Deploy your mock APIs anywhere.",
-  "version": "2.2.1",
+  "version": "2.2.1-DEV-1",
   "author": {
     "name": "Guillaume Monnet",
     "email": "hi@255kb.dev",
@@ -14,7 +14,8 @@
   "scripts": {
     "lint": "eslint -c .eslintrc.js --ext .js,.ts .",
     "test": "ts-mocha -p ./tsconfig-build.json --timeout 40000 --forbid-only --file test/libs/setup.ts test/**/*.spec.ts",
-    "build": "rm -rf dist && tsc -p tsconfig-build.json && oclif-dev manifest"
+    "build": "rm -rf dist && tsc -p tsconfig-build.json && oclif-dev manifest",
+    "pack": "npm pack"
   },
   "main": "./dist/index.js",
   "types": "dist/index.d.ts",
@@ -43,8 +44,8 @@
   },
   "funding": "https://mockoon.com/sponsor-us/",
   "dependencies": {
-    "@mockoon/commons": "2.12.0",
-    "@mockoon/commons-server": "3.2.1",
+    "@mockoon/commons": "2.12.0-DEV-1",
+    "@mockoon/commons-server": "3.2.1-DEV-1",
     "@oclif/command": "1.8.18",
     "@oclif/config": "1.18.5",
     "@oclif/plugin-help": "5.1.15",

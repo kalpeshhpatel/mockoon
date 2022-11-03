@@ -16,7 +16,7 @@ export type ViewsNameType =
   | 'ENV_SETTINGS'
   | 'ENV_RELOAD';
 
-export type TabsNameType = 'RESPONSE' | 'HEADERS' | 'RULES' | 'SETTINGS';
+export type TabsNameType = 'RESPONSE' | 'REQUEST' | 'HEADERS' | 'RULES' | 'SETTINGS';
 
 export type EnvironmentLogsTabsNameType = 'REQUEST' | 'RESPONSE';
 

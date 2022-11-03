@@ -21,7 +21,7 @@ import busboy from 'busboy';
 import cookieParser from 'cookie-parser';
 import { EventEmitter } from 'events';
 import express, { Application, NextFunction, Request, Response } from 'express';
-import { createReadStream, readFile, readFileSync, statSync } from 'fs';
+import { createReadStream, readFile, readFileSync, statSync, promises as fsPromises } from 'fs';
 import type { RequestListener } from 'http';
 import { createServer as httpCreateServer, Server as httpServer } from 'http';
 import { createProxyMiddleware } from 'http-proxy-middleware';
@@ -352,9 +352,8 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
       // only launch non duplicated routes, or ignore if none.
       if (declaredRoute.enabled) {
         try {
-          let routePath = `/${
-            this.environment.endpointPrefix
-          }/${declaredRoute.endpoint.replace(/ /g, '%20')}`;
+          let routePath = `/${this.environment.endpointPrefix
+            }/${declaredRoute.endpoint.replace(/ /g, '%20')}`;
 
           routePath = routePath.replace(/\/{2,}/g, '/');
 
@@ -388,7 +387,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
   ) {
     let requestNumber = 1;
 
-    server[route.method](routePath, (request: Request, response: Response) => {
+    server[route.method](routePath, async (request: Request, response: Response) => {
       this.generateRequestDatabuckets(route, this.environment, request);
 
       // refresh environment data to get route changes that do not require a restart (headers, body, etc)
@@ -417,6 +416,11 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
       if (route.uuid && enabledRouteResponse.uuid) {
         response.routeUUID = route.uuid;
         response.routeResponseUUID = enabledRouteResponse.uuid;
+      }
+
+      // if request filePath is specified, parse (using template engine) and update the file...
+      if (enabledRouteResponse?.requestFilePath) {
+        await this.updateRequestFile(enabledRouteResponse, request, response);
       }
 
       // add route latency if any
@@ -649,6 +653,55 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
   }
 
   /**
+   * Update and save requestFile.
+   *
+   * @param routeResponse
+   * @param request
+   * @param response
+   */
+  private async updateRequestFile(
+    routeResponse: RouteResponse,
+    request: Request,
+    response: Response
+  ) {
+    try {
+      let filePath = TemplateParser(
+        false,
+        routeResponse.requestFilePath.replace(/\\/g, '/'),
+        this.environment,
+        this.processedDatabuckets,
+        request
+      );
+
+      filePath = resolvePathFromEnvironment(
+        filePath,
+        this.options.environmentDirectory
+      );
+
+      const fileMimeType = mimeTypeLookup(filePath) || '';
+
+      // parse templating for a limited list of mime types,
+      // if the templating is not supported for given mime type, don't process file..
+      if (MimeTypesWithTemplating.indexOf(fileMimeType) === -1) {
+        this.emit('custom-event', `${routeResponse.requestFilePath} will not be parsed with templating engine as it's mime type is not supported.`);
+
+        return;
+      }
+      const data = await fsPromises.readFile(filePath);
+      const fileContent = TemplateParser(
+        false,
+        data.toString(),
+        this.environment,
+        this.processedDatabuckets,
+        request
+      );
+      await fsPromises.writeFile(filePath, fileContent);
+    } catch (error: any) {
+      this.emit('error', ServerErrorCodes.UNKNOWN_SERVER_ERROR, error);
+    }
+  }
+
+  /**
    * Always answer with status 200 to CORS pre flight OPTIONS requests if option activated.
    * /!\ Must be called after the routes creation otherwise it will intercept all user defined OPTIONS routes.
    *
@@ -812,7 +865,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
             target.headers[header.key] = parsedHeaderValue;
           }
         }
-      } catch (error) {}
+      } catch (error) { }
     });
   }
 
