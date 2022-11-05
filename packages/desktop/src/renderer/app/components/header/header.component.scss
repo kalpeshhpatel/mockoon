@@ -3,3 +3,12 @@
 .header {
   background-color: $gray-900;
 }
+
+.nsx-mockoon-container {
+  align-self: center;
+  margin-left: auto;
+  margin-right: 20px;
+  .nsx-mockoon-label {
+    font-weight: 600;
+  }
+}

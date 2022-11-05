@@ -30,7 +30,7 @@ const config = Object.assign({}, commonConfig, {
   dmg: {
     sign: false
   },
-  afterSign: 'scripts/notarize.js'
+  // afterSign: 'scripts/notarize.js'
 });
 
 module.exports = config;

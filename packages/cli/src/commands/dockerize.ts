@@ -35,6 +35,7 @@ export default class Dockerize extends Command {
     const { flags: userFlags } = this.parse(Dockerize);
     const resolvedDockerfilePath = pathResolve(userFlags.output);
     const dockerfilePath: ParsedPath = pathParse(resolvedDockerfilePath);
+    const noopFilePath = `${dockerfilePath.dir}/noop`;
 
     const parsedEnvironments = await parseDataFiles(userFlags.data);
     userFlags.data = parsedEnvironments.filePaths;
@@ -78,6 +79,8 @@ export default class Dockerize extends Command {
       await mkdirp(dockerfilePath.dir);
 
       await fs.writeFile(resolvedDockerfilePath, dockerFile);
+      // create empty noop file to copy in docker container...
+      await fs.writeFile(noopFilePath, '');
 
       this.log(Messages.CLI.DOCKERIZE_SUCCESS, resolvedDockerfilePath);
       this.log(
@@ -88,8 +91,7 @@ export default class Dockerize extends Command {
           : environmentsInfo[0].name,
         environmentsInfo.reduce(
           (portsString, environmentInfo) =>
-            `${portsString ? portsString + ' ' : portsString}-p ${
-              environmentInfo.port
+            `${portsString ? portsString + ' ' : portsString}-p ${environmentInfo.port
             }:${environmentInfo.port}`,
           ''
         ),

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { Environment } from '@mockoon/commons';
 import { Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
+import { MainAPI } from 'src/renderer/app/constants/common.constants';
 import { EnvironmentLog } from 'src/renderer/app/models/environment-logs.model';
 import {
   EnvironmentStatus,
@@ -31,7 +32,7 @@ export class HeaderComponent implements OnInit {
   constructor(
     private store: Store,
     private environmentsService: EnvironmentsService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.activeView$ = this.store.select('activeView');
@@ -97,5 +98,12 @@ export class HeaderComponent implements OnInit {
    */
   public toggleEnvironment() {
     this.environmentsService.toggleEnvironment();
+  }
+
+  public onNSXMockoonLinkClick() {
+    MainAPI.send(
+      'APP_OPEN_EXTERNAL_LINK',
+      'https://confluence.eng.vmware.com/display/NSBU/Extended+Mockoon'
+    );
   }
 }
